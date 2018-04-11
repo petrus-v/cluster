@@ -32,6 +32,7 @@ RUN apk add --no-cache \
     && rm consul-template.zip \
     && mkdir /consul/template \
     && sed -i 's/#AuthorizedKeysCommand .*/AuthorizedKeysCommand \/sbin\/authorizedkeys.py/' /etc/ssh/sshd_config \
+    && sed -i 's/#Port 22/Port 2126/g' /etc/ssh/sshd_config \
     && sed -i 's/#AuthorizedKeysCommandUser .*/AuthorizedKeysCommandUser gw/' /etc/ssh/sshd_config
 
 USER consul
