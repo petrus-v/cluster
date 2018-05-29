@@ -199,13 +199,13 @@ class Application(object):
         return self._compose
 
     @contextmanager
-    def notify_transfer(self):
+    def notify(self, key):
         try:
             yield
-            do('consul kv put migrate/{}/success'.format(self.name))
+            do('consul kv put migrate/{}/{}'.format(self.name, key))
         except Exception as e:
             log.error('Volume migration FAILED! : %s', str(e))
-            do('consul kv put migrate/{}/failure'.format(self.name))
+            do('consul kv put migrate/{}/failure_{}'.format(self.name, key))
             self.up()  # TODO move in the deploy
             self.maintenance(enable=False)  # TODO move
             raise
@@ -214,14 +214,14 @@ class Application(object):
     def clean_notif(self):
         do('consul kv delete -recurse migrate/{}/'.format(self.name))
 
-    def wait_transfer(self):
-        for loop in range(1200):
+    def wait_notif(self, key):
+        for _ in range(1200):
             log.info('Waiting migrate notification for %s', self.name)
-            res = do('consul kv get -keys migrate/{}/'.format(self.name))
+            res = do('consul kv get -keys migrate/{}/{}'.format(self.name, key))
             if res:
                 status = res.split('/')[-1]
-                do('consul kv delete -recurse migrate/{}/'
-                   .format(self.name))
+                do('consul kv delete -recurse migrate/{}/{}'
+                   .format(self.name, key))
                 log.info('Transfer notification status: %s', status)
                 return status
             time.sleep(1)
