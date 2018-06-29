@@ -552,12 +552,6 @@ class Application(object):
         caddyfiles = concat([self.caddyfile(s) for s in self.services])
         caddyfiles = [c for c in caddyfiles if c]
         urls = concat([c['keys'] for c in caddyfiles])
-        pubkey = {  # TODO support environments as lists
-            s: self.compose['services'][s].get('environment', {}
-                                               ).get('PUBKEY', '')
-            if type(self.compose['services'][s].get('environment', {})
-                    ) is dict else {}
-            for s in self.services}
         value = {
             'haproxy': self.haproxy(self.services),
             'caddyfile': Caddyfile.dumps(caddyfiles) if caddyfiles else "",
@@ -572,7 +566,6 @@ class Application(object):
             'master': master,
             'slave': slave,
             'ct': {s: self.container_name(s) for s in self.services},
-            'pubkey': pubkey,
             'volumes': [v.name for v in self.volumes]}
 
         do("consul kv put app/{} '{}'"
@@ -1375,11 +1368,6 @@ class TestCase(unittest.TestCase):
         app = Application(self.repo_url, 'master')
         app.download()
         self.assertEqual(None, app.register_consul())
-
-    def test_pubkey(self):
-        app = Application(self.repo_url, 'master')
-        app.download()
-        self.assertEqual(None, app.register_kv('node1', 'node2'))
 
     def test_brackets_generation(self):
         self.assertEqual(
