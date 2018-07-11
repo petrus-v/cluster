@@ -2,6 +2,8 @@ Change log
 ==========
 
 * Add support to non migrable volumes
+* Remove sshd support through consul. Was too limited and not working also
+  becomes useless with the ``HAPROXY`` configuration.
 
 * Add support to ``CONSUL_CHECK_URLS`` to add extra consul checks
 
