@@ -9,7 +9,6 @@ import re
 import requests
 import socket
 import time
-import unittest
 import yaml
 from base64 import b64decode
 from contextlib import contextmanager
@@ -19,7 +18,6 @@ from os.path import basename, join, exists
 from subprocess import run, CalledProcessError, PIPE
 from sys import stdin, argv
 from urllib.parse import urlparse
-from uuid import uuid1
 DTFORMAT = "%Y-%m-%dT%H%M%S.%f"
 DEPLOY = '/deploy'
 CADDYLOGS = '/var/log'
@@ -1102,13 +1100,6 @@ def deploy_handler():
         'Logging params'
     )
     logging_group.add_argument(
-        '-f',
-        '--logging-file',
-        type=argparse.FileType('r'),
-        help='Logging configuration file, (logging-level and logging-format '
-             'are ignored if provide)'
-    )
-    logging_group.add_argument(
         '-l', '--logging-level', default='DEBUG'
     )
     logging_group.add_argument(
@@ -1121,6 +1112,7 @@ def deploy_handler():
         default=join(DEPLOY, 'handler.log')
     )
     arguments = parser.parse_args()
+    do("mkdir -p {}".format(os.path.dirname(arguments.logging_file)))
     logging.basicConfig(
         level=getattr(logging, arguments.logging_level.upper()),
         format=arguments.logging_format,
@@ -1128,7 +1120,7 @@ def deploy_handler():
         style='{'
     )
     ch = logging.StreamHandler()
-    ch.setFormatter(logging.Formatter(logformat, style='{'))
+    ch.setFormatter(logging.Formatter(arguments.logging_format, style='{'))
     logging.getLogger().addHandler(ch)
 
     myself = socket.gethostname()
